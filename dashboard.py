@@ -69,5 +69,12 @@ def open_browser():
 # App starten
 if __name__ == "__main__":
     print("🚀 Starte Dash-Server...")
-    threading.Timer(1.5, open_browser).start()
+    import webbrowser
+import os
+
+if __name__ == '__main__':
+    # Nur im Hauptprozess öffnen, nicht im Debug-Neustart
+    if os.environ.get("WERKZEUG_RUN_MAIN") != "true":
+        webbrowser.open_new("http://127.0.0.1:8050/")
     app.run(debug=True)
+
