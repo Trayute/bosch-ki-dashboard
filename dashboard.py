@@ -5,22 +5,16 @@ from dash import dcc, html
 import webbrowser
 import os
 
-# Korrigierter Pfad zur automatisch erzeugten Anomalie-Datei
 DATA_PATH = "machine_data_with_anomalies.csv"
 
-# Daten einlesen
 df = pd.read_csv(DATA_PATH)
-
-# Zeitspalte in Datetime konvertieren
 df["time"] = pd.to_datetime(df["time"])
 
-# Dash App initialisieren
 app = dash.Dash(__name__)
 app.title = "Bosch Maschinen-Dashboard mit KI"
 
-# Layout definieren
 app.layout = html.Div([
-    html.H1("Bosch Maschinen-Dashboard mit KI", style={"textAlign": "center"}),
+    html.H1("🔧 Bosch Maschinen-Dashboard mit KI", style={"textAlign": "center"}),
 
     dcc.Graph(
         id="temperature-graph",
@@ -43,9 +37,10 @@ app.layout = html.Div([
             ],
             "layout": go.Layout(
                 title="🌡️ Temperaturverlauf mit Anomalie-Erkennung",
-                xaxis={"title": "Zeit"},
-                yaxis={"title": "Temperatur (°C)"},
-                legend={"x": 0, "y": 1},
+                xaxis=dict(title="Zeit", tickformat="%H:%M:%S", range=[df["time"].min(), df["time"].max()]),
+                yaxis=dict(title="Temperatur (°C)"),
+                legend=dict(x=0, y=1),
+                template="plotly_white"
             )
         }
     ),
@@ -71,15 +66,15 @@ app.layout = html.Div([
             ],
             "layout": go.Layout(
                 title="🪄 Vibrations­erkennung mit Anomalie-Markierung",
-                xaxis={"title": "Zeit"},
-                yaxis={"title": "Vibration"},
-                legend={"x": 0, "y": 1},
+                xaxis=dict(title="Zeit", tickformat="%H:%M:%S", range=[df["time"].min(), df["time"].max()]),
+                yaxis=dict(title="Vibration"),
+                legend=dict(x=0, y=1),
+                template="plotly_white"
             )
         }
     )
 ])
 
-# Browser nur im Hauptprozess öffnen
 if __name__ == "__main__":
     if os.environ.get("WERKZEUG_RUN_MAIN") != "true":
         webbrowser.open("http://127.0.0.1:8050/")
