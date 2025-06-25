@@ -1,24 +1,36 @@
-import pandas as pd
 import numpy as np
-import datetime
+import pandas as pd
+import random
+from datetime import datetime, timedelta
 
-# Beispielhafte Maschinendaten erzeugen
-np.random.seed(42)
-data = {
-    "time": [datetime.datetime.now() + datetime.timedelta(seconds=i*10) for i in range(10)],
-    "temperature": np.random.normal(70, 5, 10),
-    "vibration": np.random.normal(0.02, 0.005, 10)
-}
+def generate_data(n=100, start_time=None):
+    """Simuliert Maschinendaten mit Anomalien und speichert sie"""
+    start_time = start_time or datetime.now()
+    timestamps = [start_time + timedelta(seconds=i * 10) for i in range(n)]
 
-df = pd.DataFrame(data)
+    temp = np.random.normal(70, 3, n)
+    vib = np.random.normal(0.02, 0.01, n)
+    pressure = np.random.normal(100, 5, n)
 
-# Speichern der Daten
-df.to_csv("machine_data.csv", index=False)
-print("✅ Datei machine_data.csv wurde erzeugt.")
+    # Anomalien zufällig setzen
+    anomalies = [1] * n
+    anomaly_indices = random.sample(range(n), k=int(n * 0.1))  # 10 % Anomalien
+    for i in anomaly_indices:
+        temp[i] += random.uniform(15, 25)
+        vib[i] += random.uniform(0.02, 0.05)
+        anomalies[i] = -1
 
-import os
+    df = pd.DataFrame({
+        "time": timestamps,
+        "temperature": temp,
+        "vibration": vib,
+        "pressure": pressure,
+        "anomaly": anomalies
+    })
 
-if os.path.exists("machine_data.csv"):
-    print("✅ Datei erfolgreich erstellt.")
-else:
-    print("❌ Datei wurde NICHT erstellt!")
+    # Speichere als "machine_data.csv", damit analyze_data.py sie weiterverarbeiten kann
+    df.to_csv("machine_data.csv", index=False)
+    print("✅ 'machine_data.csv' gespeichert.")
+
+if __name__ == "__main__":
+    generate_data()

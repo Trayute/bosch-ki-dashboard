@@ -1,23 +1,23 @@
 import pandas as pd
 
-# Daten laden
-df = pd.read_csv("machine_data.csv")
+THRESHOLDS = {
+    "temperature": 80,
+    "vibration": 0.04
+}
 
-# Sicherheitsprüfung
-if "time" not in df.columns:
-    raise ValueError("❌ 'time' Spalte fehlt. Wurde simulate_data.py korrekt ausgeführt?")
+def detect_anomalies(file_in="machine_data.csv", file_out="machine_data_with_anomalies.csv"):
+    df = pd.read_csv(file_in)
+    df["time"] = pd.to_datetime(df["time"])
 
-# Zeitspalte konvertieren
-df["time"] = pd.to_datetime(df["time"])
+    df["anomaly"] = (
+        (df["temperature"] > THRESHOLDS["temperature"]) |
+        (df["vibration"] > THRESHOLDS["vibration"])
+    )
+    df["anomaly"] = df["anomaly"].map({True: -1, False: 1})
 
-# Anomalie erkennen
-df["anomaly"] = (
-    (df["temperature"] > 80) |
-    (df["vibration"] > 0.04)
-)
+    df.to_csv(file_out, index=False)
+    print(f"✅ '{file_out}' mit Anomalien gespeichert.")
+    return df
 
-df["anomaly"] = df["anomaly"].map({True: -1, False: 1})
-
-# Datei speichern
-df.to_csv("machine_data_with_anomalies.csv", index=False)
-print("✅ Datei machine_data_with_anomalies.csv wurde erzeugt.")
+if __name__ == "__main__":
+    detect_anomalies()

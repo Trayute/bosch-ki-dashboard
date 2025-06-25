@@ -1,9 +1,11 @@
 import dash
 from dash import dcc, html
-import plotly.graph_objects as go
+import plotly.express as px  # ← WICHTIG
 import pandas as pd
 import webbrowser
+import threading
 import os
+
 
 # Daten laden
 df = pd.read_csv("machine_data_with_anomalies.csv")
@@ -25,54 +27,54 @@ app.layout = html.Div([
     # Temperatur-Plot
     dcc.Graph(
         id="temperature-chart",
-        figure=go.Figure([
-            go.Scatter(
-                x=df_normal["time"],
-                y=df_normal["temperature"],
-                mode="lines",
-                name="Normal",
-                line=dict(color="blue")
-            ),
-            go.Scatter(
-                x=df_anomal["time"],
-                y=df_anomal["temperature"],
-                mode="markers",
-                name="Anomalie",
-                marker=dict(color="red", size=10, symbol="circle")
-            )
-        ]).update_layout(
-            title="Temperaturverlauf mit Anomalie-Erkennung",
-            xaxis_title="Zeit",
-            yaxis_title="Temperatur (°C)",
-            legend_title="Status"
-        )
-    ),
+        figure={
+            "data": [
+                # Normale Linie
+                px.line(df_normal, x="time", y="temperature").data[0],
+                # Anomalien explizit als rote Marker
+                dict(
+                    type="scatter",
+                    mode="markers",
+                    x=df_anomal["time"],
+                    y=df_anomal["temperature"],
+                    marker=dict(color="red", size=10),
+                    name="Anomalie"
+                )
+            ],
+            "layout": {
+                "title": "Temperaturverlauf mit Anomalie-Erkennung",
+                "xaxis": {"title": "Zeit", "autorange": True},
+                "yaxis": {"title": "Temperatur (°C)"},
+                "legend": {"title": "Status"},
+            }
+        }
+        ),
+
 
     # Vibrations-Plot
     dcc.Graph(
         id="vibration-chart",
-        figure=go.Figure([
-            go.Scatter(
-                x=df_normal["time"],
-                y=df_normal["vibration"],
-                mode="lines",
-                name="Normal",
-                line=dict(color="blue")
-            ),
-            go.Scatter(
-                x=df_anomal["time"],
-                y=df_anomal["vibration"],
-                mode="markers",
-                name="Anomalie",
-                marker=dict(color="red", size=10, symbol="circle")
-            )
-        ]).update_layout(
-            title="Vibration mit Anomalie-Erkennung",
-            xaxis_title="Zeit",
-            yaxis_title="Vibration",
-            legend_title="Status"
-        )
+        figure={
+            "data": [
+                px.line(df_normal, x="time", y="vibration").data[0],
+                dict(
+                    type="scatter",
+                    mode="markers",
+                    x=df_anomal["time"],
+                    y=df_anomal["vibration"],
+                    marker=dict(color="red", size=10),
+                    name="Anomalie"
+                )
+            ],
+            "layout": {
+                "title": "Vibrationserkennung",
+                "xaxis": {"title": "Zeit", "autorange": True},
+                "yaxis": {"title": "Vibration"},
+                "legend": {"title": "Status"},
+            }
+        }
     ),
+
 
     html.Div("🔵 = Normal | 🔴 = Anomalie", style={"textAlign": "center", "marginTop": "20px", "fontWeight": "bold"})
 ])
