@@ -2,30 +2,27 @@ import numpy as np
 import pandas as pd
 import random
 from datetime import datetime, timedelta
+import time
+import os
 
 def generate_data(n=100,
-                  start_time=None,
                   step_seconds=10,
                   anomaly_ratio=0.10,
-                  seed=None,
-                  outfile="machine_data.csv"):
+                  outfile=os.path.join("data", "machine_data.csv")):
     """
-    Erstellt eine simulierte Maschinen-Zeitreihe.
-
-    Parameters
-    ----------
-    n : int                Anzahl der Messpunkte
-    start_time : datetime  Start-Zeitpunkt (default = jetzt)
-    step_seconds : int     Abstand zwischen Punkten
-    anomaly_ratio : float  Anteil Anomalien (0-1)
-    seed : int             Zufalls-Seed für Reproduzierbarkeit
-    outfile : str          CSV-Dateiname
+    Erstellt simulierte Maschinendaten mit Anomalien.
     """
-    if seed is not None:
-        np.random.seed(seed)
-        random.seed(seed)
+    print("▶ simulate_data.py wird ausgeführt")
 
-    start_time = start_time or datetime.now()
+
+    os.makedirs("data", exist_ok=True)
+
+    # Zufall mit Systemzeit initialisieren für Variation
+    seed = int(time.time() * 1000) % 2**32  # Millisekunden-Genauigkeit
+    np.random.seed(seed)
+    random.seed(seed)
+
+    start_time = datetime.now()
     timestamps = [start_time + timedelta(seconds=i * step_seconds) for i in range(n)]
 
     temp = np.random.normal(70, 3, n)
@@ -53,8 +50,6 @@ def generate_data(n=100,
 if __name__ == "__main__":
     generate_data(
         n=120,
-        start_time=datetime(2025, 6, 25, 12, 16, 0),
         step_seconds=10,
-        anomaly_ratio=0.10,
-        seed=42
+        anomaly_ratio=0.10
     )

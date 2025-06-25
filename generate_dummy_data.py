@@ -2,20 +2,13 @@ import pandas as pd
 import numpy as np
 from datetime import datetime, timedelta
 import os
-import shutil
-import random
-import numpy as np
-
-# Zufalls-Seed nicht setzen, aber bewusst neu initialisieren
-random.seed(None)
-np.random.seed(None)
 
 # === Parameter ===
 NUM_POINTS = 1000
 ANOMALY_RATE = 0.1
-TIME_INTERVAL = 10
+TIME_INTERVAL = 10  # Sekunden
 OUTPUT_FOLDER = "data"
-FILENAME = f"machine_data_with_anomalies_{datetime.now().strftime('%Y%m%d_%H%M%S')}.csv"
+FILENAME = "machine_data.csv"  # Fester Dateiname für konsistente Nutzung
 
 # === Listen vorbereiten ===
 times = []
@@ -42,7 +35,7 @@ for i in range(NUM_POINTS):
         anomalies.append(1)
 
     temperatures.append(temp)
-    vibrations.append(abs(vib))
+    vibrations.append(abs(vib))  # Positiv halten
 
 # === DataFrame erzeugen ===
 df = pd.DataFrame({
@@ -52,13 +45,9 @@ df = pd.DataFrame({
     "anomaly": anomalies
 })
 
-# === Speichern ===
+# === Ordner erstellen & speichern ===
 os.makedirs(OUTPUT_FOLDER, exist_ok=True)
 output_path = os.path.join(OUTPUT_FOLDER, FILENAME)
 df.to_csv(output_path, index=False)
 
-# ✅ Kopiere Datei unter Standardnamen für Dashboard
-shutil.copy(output_path, "machine_data_with_anomalies.csv")
-
 print(f"✅ Datei erfolgreich gespeichert unter: {output_path}")
-print("📎 Kopie erstellt als: machine_data_with_anomalies.csv")
