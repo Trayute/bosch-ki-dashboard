@@ -1,13 +1,12 @@
 import dash
 from dash import dcc, html
-import plotly.express as px  # ← WICHTIG
+import plotly.graph_objects as go
 import pandas as pd
 import webbrowser
 import threading
 import os
 
-
-# Daten laden
+# === Daten laden ===
 df = pd.read_csv("machine_data_with_anomalies.csv")
 df["time"] = pd.to_datetime(df["time"])
 df["status"] = df["anomaly"].map({1: "Normal", -1: "Anomalie"})
@@ -16,72 +15,68 @@ df["status"] = df["anomaly"].map({1: "Normal", -1: "Anomalie"})
 df_normal = df[df["anomaly"] == 1]
 df_anomal = df[df["anomaly"] == -1]
 
-# Dash App initialisieren
+# === Dash App initialisieren ===
 app = dash.Dash(__name__)
 app.title = "Bosch KI Dashboard"
 
-# Layout der App
+# === Temperatur-Plot ===
+temperature_fig = go.Figure()
+
+temperature_fig.add_trace(go.Scatter(
+    x=df_normal["time"], y=df_normal["temperature"],
+    mode="lines", name="Normal", line=dict(color="blue")
+))
+temperature_fig.add_trace(go.Scatter(
+    x=df_anomal["time"], y=df_anomal["temperature"],
+    mode="markers", name="Anomalie", marker=dict(color="red", size=8)
+))
+temperature_fig.update_layout(
+    title="🌡️ Temperaturverlauf mit Anomalie-Erkennung",
+    xaxis_title="Zeit",
+    yaxis_title="Temperatur (°C)",
+    legend_title="Status",
+    template="plotly_white"
+)
+
+# === Vibrations-Plot ===
+vibration_fig = go.Figure()
+
+vibration_fig.add_trace(go.Scatter(
+    x=df_normal["time"], y=df_normal["vibration"],
+    mode="lines", name="Normal", line=dict(color="blue")
+))
+vibration_fig.add_trace(go.Scatter(
+    x=df_anomal["time"], y=df_anomal["vibration"],
+    mode="markers", name="Anomalie", marker=dict(color="red", size=8)
+))
+vibration_fig.update_layout(
+    title="📈 Vibrationserkennung mit Anomalie-Markierung",
+    xaxis_title="Zeit",
+    yaxis_title="Vibration",
+    legend_title="Status",
+    template="plotly_white"
+)
+
+# === Layout definieren ===
 app.layout = html.Div([
-    html.H1("Bosch Maschinen-Dashboard mit KI", style={"textAlign": "center"}),
+    html.H1("🔧 Bosch Maschinen-Dashboard mit KI", style={"textAlign": "center", "marginBottom": "40px"}),
 
-    # Temperatur-Plot
-    dcc.Graph(
-        id="temperature-chart",
-        figure={
-            "data": [
-                # Normale Linie
-                px.line(df_normal, x="time", y="temperature").data[0],
-                # Anomalien explizit als rote Marker
-                dict(
-                    type="scatter",
-                    mode="markers",
-                    x=df_anomal["time"],
-                    y=df_anomal["temperature"],
-                    marker=dict(color="red", size=10),
-                    name="Anomalie"
-                )
-            ],
-            "layout": {
-                "title": "Temperaturverlauf mit Anomalie-Erkennung",
-                "xaxis": {"title": "Zeit", "autorange": True},
-                "yaxis": {"title": "Temperatur (°C)"},
-                "legend": {"title": "Status"},
-            }
-        }
-        ),
+    dcc.Graph(id="temperature-chart", figure=temperature_fig),
+    dcc.Graph(id="vibration-chart", figure=vibration_fig),
 
-
-    # Vibrations-Plot
-    dcc.Graph(
-        id="vibration-chart",
-        figure={
-            "data": [
-                px.line(df_normal, x="time", y="vibration").data[0],
-                dict(
-                    type="scatter",
-                    mode="markers",
-                    x=df_anomal["time"],
-                    y=df_anomal["vibration"],
-                    marker=dict(color="red", size=10),
-                    name="Anomalie"
-                )
-            ],
-            "layout": {
-                "title": "Vibrationserkennung",
-                "xaxis": {"title": "Zeit", "autorange": True},
-                "yaxis": {"title": "Vibration"},
-                "legend": {"title": "Status"},
-            }
-        }
-    ),
-
-
-    html.Div("🔵 = Normal | 🔴 = Anomalie", style={"textAlign": "center", "marginTop": "20px", "fontWeight": "bold"})
+    html.Div("🔵 = Normal | 🔴 = Anomalie", style={
+        "textAlign": "center",
+        "marginTop": "20px",
+        "fontWeight": "bold",
+        "fontSize": "18px"
+    })
 ])
 
-# Autostart im Browser
-if __name__ == '__main__':
-    if os.environ.get("WERKZEUG_RUN_MAIN") != "true":
-        webbrowser.open_new("http://127.0.0.1:8050/")
-    print("🚀 Starte Dash-Server...")
-    app.run(debug=True)
+# === Autostart im Browser ===
+def open_browser():
+    webbrowser.open_new("http://127.0.0.1:8050/")
+
+if __name__ == "__main__":
+    threading.Timer(1, open_browser).start()
+    print("🚀 Starte Dash-Server unter http://127.0.0.1:8050/")
+    app.run(debug=True, use_reloader=False)
