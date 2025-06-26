@@ -175,7 +175,7 @@ Es wurde speziell für eine Bewerbung bei **Bosch Immenstadt – Sondermaschinen
 
 **Eyüp Cindioglu**  
 📍 Hochschule Kempten  
-✉️ eyuepcindioglu@hotmail.com  
+✉️ eyupcindioglu@hotmail.com  
 🔗 [github.com/Trayute://github.com/Trayute
 
 ---
